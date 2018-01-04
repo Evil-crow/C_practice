@@ -23,11 +23,11 @@ void print_graph(AdjMatrix *G);
 
 int matrix_locate(AdjMatrix *G, char *str);
 
-int matrix_get_next_adjvex(AdjMatrix *G, int cur_vex, int cur_pos);
+int matrix_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex);
 
 void BFS(AdjMatrix *G, int cur_vex);
 
-void DFS(AdjMatrix *G, int cur_vex);
+void DFS(AdjMatrix *G, int start, int end);
 
 void matrix_Dijkstra(AdjMatrix *G, int start, int **path, int *length);
 

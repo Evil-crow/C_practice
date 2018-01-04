@@ -8,9 +8,11 @@ int dfs_visited[MAXNUM];
 
 int bfs_visited[MAXNUM];
 
-int path[MAXNUM][MAXNUM];
+int dfs_path[MAXNUM];
 
-int length[MAXNUM];
+int bfs_path[MAXNUM][MAXNUM];
+
+int pos;
 
 void matrix_init(AdjMatrix **G)
 {
@@ -79,7 +81,7 @@ void print_graph(AdjMatrix *G)
     printf("vexnum:%d , arcnum:%d\n",G->vexnum,G->arcnum);
 
     for (int i = 0; i < G->vexnum; i++)
-        printf("1. %s ",G->vex[i]);
+        printf("%s ",G->vex[i]);
     printf("\n");
 
     for (int i = 0; i < G->vexnum; i++) {
@@ -89,19 +91,41 @@ void print_graph(AdjMatrix *G)
     }
 }
 
-void DFS(AdjMatrix *G, int cur_vex)
+void DFS(AdjMatrix *G, int start, int end)
 {
-    int next_vex;
+    int next, temp;
 
-    printf("%s\n",(*G).vex[cur_vex]);
-    dfs_visited[cur_vex] = 1;
-    next_vex = matrix_get_next_adjvex(G, cur_vex, 0);
-    while (next_vex != -1) {
-        if (!dfs_visited[next_vex]) {
-            DFS(G, next_vex);
+    dfs_visited[start] = 1;
+    dfs_path[pos++] = start;
+    next = matrix_get_next_adjvex(G, start, 0);
+    while (next != -1) {
+        temp = next;
+        if (dfs_path[pos - 1] == end) {
+            for (int t = 0; t < pos; t++) {
+                printf("%s",G->vex[dfs_path[t]]);
+                if (t != pos - 1)
+                    printf("--->");
+            }
+            printf("\n");
+            return;
         }
-        next_vex = matrix_get_next_adjvex(G, cur_vex, next_vex);
+        if (!dfs_visited[next])
+            DFS(G, next, end);
+        dfs_visited[temp] = 0;
+        dfs_path[pos - 1] = -1;
+        pos--;
+        next = matrix_get_next_adjvex(G, start, next);
     }
+    if (dfs_path[pos - 1] == end) {
+            for (int t = 0; t < pos; t++) {
+                printf("%s",G->vex[dfs_path[t]]);
+                if (t != pos - 1)
+                    printf("-->");
+            }
+            printf("\n");
+            return;
+    }
+
 }
 
 void BFS(AdjMatrix *G, int cur_vex)
@@ -130,8 +154,8 @@ void BFS(AdjMatrix *G, int cur_vex)
 
 int matrix_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex)
 {
-    for (int i = next_vex+1; i < G->vexnum; i++) {
-        if (G->arcs[cur_vex][i] > 0)
+    for (int i = next_vex + 1; i < G->vexnum; i++) {
+        if (G->arcs[cur_vex][i] != INFINITY && !dfs_visited[i])
             return i;
     }
 
@@ -149,8 +173,10 @@ void matrix_Prim(AdjMatrix *G, int start)
     result[pos++] = start;
 
     for (int i = 0; i < G->vexnum; i++) {
-        closedge[i].adjvex = start;
-        closedge[i].value = G->arcs[start][i];
+        if (i != start) {
+            closedge[i].adjvex = start;
+            closedge[i].value = G->arcs[start][i];
+        }
     }
     for (int t = 0; t < G->vexnum - 1; t++) {
         int min = INFINITY;
@@ -172,8 +198,11 @@ void matrix_Prim(AdjMatrix *G, int start)
         }
 
     }
-    for (int i = 0; i < pos; i++)
-        printf("%s ",G->vex[result[i]]);
+    for (int i = 0; i < pos; i++) {
+        printf("%s",G->vex[result[i]]);
+        if (i != pos - 1)
+            printf("--->");
+    }
     printf("\n");
 }
 
@@ -184,43 +213,36 @@ void matrix_Dijkstra(AdjMatrix *G, int start, int **path, int *length)
     // init array
     for (int i = 0; i < G->vexnum; i++) {
         length[i] = G->arcs[start][i];
-        if (G->vex[start][i] != INFINITY) {
+        if (G->arcs[start][i] != INFINITY) {
             path[i][1] = start;
         }
     }
     path[start][0] = 1;                            // flag: V-S
-    printf("Dijkstra init OK!\n");
+
     // loop (vexnum-1)
     for (int i = 0; i < G->vexnum - 1; i++) {
         min = INFINITY;
 
         for (int j = 0; j < G->vexnum; j++)
-            if (!path[j][0] && length[j] < min) {
+            if ((path[j][0] == -1) && length[j] < min) {
                 temp = j;
                 min = length[temp];
             }
-        printf("temp = %d, min = %d\n", temp, min);
+
         if (min == INFINITY)
             return ;
         path[temp][0] = 1;                         //flag: add flag
 
         // Update length[]
         for (int j = 0; j < G->vexnum; j++) {
-            if (!path[j][0] && G->arcs[temp][j] != INFINITY && (length[temp] + G->arcs[temp][j] < length[j])) {
+            if ((path[j][0] == -1) && G->arcs[temp][j] != INFINITY && (length[temp] + G->arcs[temp][j] < length[j])) {
                 length[j] = length[temp] + G->arcs[temp][j];
 
-                for (k = 1; path[j][k] != 0; k++)
+                for (k = 1; path[temp][k] != -1; k++)
                     path[j][k] = path[temp][k];
                 path[j][k++] = temp;
-                path[j][k] = 0;
-                printf("k = %d\n",k);
+                path[j][k] = -1;
             }
         }
-        for(int i = 0; i < G->vexnum; i++) {
-            for (int j = 0; j < G->vexnum; j++)
-                printf("%d ",path[i][j]);
-            printf("\n");
-        }
-        printf("Dijkstra Update OK!\n");
     }
 }
