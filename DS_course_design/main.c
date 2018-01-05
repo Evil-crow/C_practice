@@ -3,7 +3,7 @@
 #include "menu.h"
 #include "AdjMatrix.h"
 
-int main()
+int main(void)
 {
     menu( );
 }

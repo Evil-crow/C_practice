@@ -10,6 +10,20 @@ void get_all_way(AdjMatrix *G);
 
 void get_mininum_transfer_path(AdjMatrix *G);
 
+void add_vexnode(AdjMatrix *G);
+
+void del_vexnode(AdjMatrix *G);
+
+void add_arcs(AdjMatrix *G);
+
+void del_arcs(AdjMatrix *G);
+
+void save_file(AdjMatrix *G);
+
+void map(void);
+
+void map_information(AdjMatrix *G);
+
 // TODO：map地图
 
 // TODO：修改图（增删路线，地点）

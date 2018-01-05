@@ -6,13 +6,9 @@
 
 int dfs_visited[MAXNUM];
 
-int bfs_visited[MAXNUM];
-
 int dfs_path[MAXNUM];
 
-int bfs_path[MAXNUM][MAXNUM];
-
-int pos;
+int dfs_pos;
 
 void matrix_init(AdjMatrix **G)
 {
@@ -59,7 +55,7 @@ void matrix_init(AdjMatrix **G)
     fclose(fp);
 
     printf("Get the file OK!\n");
-    print_graph(*G);
+    //print_graph(*G);
 }
 
 int matrix_locate(AdjMatrix *G, char *str)
@@ -86,7 +82,7 @@ void print_graph(AdjMatrix *G)
 
     for (int i = 0; i < G->vexnum; i++) {
         for(int j = 0; j < G->vexnum; j++)
-            printf("%d ",G->arcs[i][j]);
+            printf("%6d ",G->arcs[i][j]);
         printf("\n");
     }
 }
@@ -96,14 +92,14 @@ void DFS(AdjMatrix *G, int start, int end)
     int next, temp;
 
     dfs_visited[start] = 1;
-    dfs_path[pos++] = start;
-    next = matrix_get_next_adjvex(G, start, 0);
+    dfs_path[dfs_pos++] = start;
+    next = matrix_dfs_get_next_adjvex(G, start, 0);
     while (next != -1) {
         temp = next;
-        if (dfs_path[pos - 1] == end) {
-            for (int t = 0; t < pos; t++) {
+        if (dfs_path[dfs_pos - 1] == end) {
+            for (int t = 0; t < dfs_pos; t++) {
                 printf("%s",G->vex[dfs_path[t]]);
-                if (t != pos - 1)
+                if (t != dfs_pos - 1)
                     printf("--->");
             }
             printf("\n");
@@ -112,50 +108,73 @@ void DFS(AdjMatrix *G, int start, int end)
         if (!dfs_visited[next])
             DFS(G, next, end);
         dfs_visited[temp] = 0;
-        dfs_path[pos - 1] = -1;
-        pos--;
-        next = matrix_get_next_adjvex(G, start, next);
+        dfs_path[dfs_pos - 1] = -1;
+        dfs_pos--;
+        next = matrix_dfs_get_next_adjvex(G, start, next);
     }
-    if (dfs_path[pos - 1] == end) {
-            for (int t = 0; t < pos; t++) {
-                printf("%s",G->vex[dfs_path[t]]);
-                if (t != pos - 1)
-                    printf("-->");
-            }
-            printf("\n");
-            return;
+    if (dfs_path[dfs_pos - 1] == end) {
+        for (int t = 0; t < dfs_pos; t++) {
+            printf("%s",G->vex[dfs_path[t]]);
+            if (t != dfs_pos - 1)
+                printf("-->");
+        }
+        printf("\n");
+        return;
     }
 
 }
 
-void BFS(AdjMatrix *G, int cur_vex)
+void BFS(AdjMatrix *G, int start, int end)
 {
-    int next_vex;
+    int next, temp;
+    int flag = 0;
+    int bfs_visited[MAXNUM] = {0};
+
+    temp = start;
+    if (start == end) {
+        printf("%s",G->vex[start]);
+        return ;
+    }
     Queue *Q;
 
     queue_init(&Q);
-    printf("%s\n",G->vex[cur_vex]);
-    bfs_visited[cur_vex] = 1;
-    queue_push_in(Q, cur_vex);
+    queue_push_in(Q, start);
 
     while (!queue_empty(Q)) {
-        queue_pop_out(Q, &cur_vex);
-        next_vex = matrix_get_next_adjvex(G, cur_vex, 0);
-        while (next_vex != -1) {
-            if (!bfs_visited[next_vex]) {
-                printf("%s\n",G->vex[next_vex]);
-                bfs_visited[next_vex] = 1;
-                queue_push_in(Q, next_vex);
+        queue_pop_out(Q, &start);
+        bfs_visited[start] = 1;
+        next = matrix_bfs_get_next_adjvex(G, start, -1, bfs_visited);
+        while (next != -1) {
+            if (!bfs_visited[next]) {
+                if (next == end) {
+                    BFS(G, temp, start);
+                    printf("-->%s",G->vex[end]);
+                    flag = 1;
+                }
+                if (!queue_repetiton(Q, next))
+                    queue_push_in(Q, next);
             }
-            next_vex = matrix_get_next_adjvex(G, cur_vex, next_vex);
+            next = matrix_bfs_get_next_adjvex(G, start, next, bfs_visited);
         }
+        if (flag == 1)
+            return ;
     }
 }
 
-int matrix_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex)
+int matrix_dfs_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex)
 {
     for (int i = next_vex + 1; i < G->vexnum; i++) {
         if (G->arcs[cur_vex][i] != INFINITY && !dfs_visited[i])
+            return i;
+    }
+
+    return -1;
+}
+
+int matrix_bfs_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex, int *bfs_visited)
+{
+    for (int i = next_vex + 1; i < G->vexnum; i++) {
+        if (G->arcs[cur_vex][i] != INFINITY && !bfs_visited[i])
             return i;
     }
 

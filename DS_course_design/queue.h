@@ -9,6 +9,8 @@ typedef struct {
 
 int queue_empty(Queue *Q);
 
+int queue_repetiton(Queue *Q, int data);
+
 void queue_init(Queue **Q);
 
 void queue_push_in(Queue *Q, int data);

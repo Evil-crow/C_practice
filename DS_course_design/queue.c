@@ -16,6 +16,16 @@ int queue_empty(Queue *Q)
     return 0;
 }
 
+int queue_repetiton(Queue *Q, int data)
+{
+    for (int i = 0; i < Q->queue_rear; i++) {
+        if (data == Q->data[i])
+            return 1;
+    }
+
+    return 0;
+}
+
 void queue_push_in(Queue *Q, int data)
 {
     Q->data[Q->queue_rear++] = data;

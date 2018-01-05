@@ -23,9 +23,11 @@ void print_graph(AdjMatrix *G);
 
 int matrix_locate(AdjMatrix *G, char *str);
 
-int matrix_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex);
+int matrix_dfs_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex);
 
-void BFS(AdjMatrix *G, int cur_vex);
+int matrix_bfs_get_next_adjvex(AdjMatrix *G, int cur_vex, int next_vex, int *bfs_visited);
+
+void BFS(AdjMatrix *G, int start, int end);
 
 void DFS(AdjMatrix *G, int start, int end);
 
